@@ -24,7 +24,7 @@ export default function App() {
   const exportToCSV = async () => {
     const csv = unparse(checkIns.map(({ name, timestamp }) => ({
       name,
-      time: timestamp?.toDate?.().toISOString?.() ?? 'N/A'
+      time: timestamp?.toDate?.().toLocaleString?.() ?? 'N/A'
     })));
     
   
@@ -117,7 +117,7 @@ useEffect(() => {
     <View style={styles.container}>
       <Text style={styles.header}>Search & Check In</Text>
 
-      <View style = {{ flexDirection: 'row', justifyContent: 'space - between', marginBottom: 10 }}>
+      <View style = {{ flexDirection: 'row', marginBottom: 10 }}>
         <Button title= "User Mode" onPress={() => setMode('user')} />
         <Button title="Admin Mode"
         onPress = {() => {
@@ -164,7 +164,9 @@ useEffect(() => {
         <>
           <Text style={styles.subheader}>Checked In</Text>
           <FlatList
-            data = {checkIns}
+            data = {checkIns
+              ?.slice()
+              ?.sort((a,b) => a.timestamp?.toDate?.() - b.timestamp?.toDate?.())}
             keyExtractor={(item) => item.id}
             renderItem = {({ item }) => (
               <Text>
