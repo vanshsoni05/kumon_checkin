@@ -1,8 +1,13 @@
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, getDocs, deleteDoc, doc } = require("firebase/firestore");
 
+require('dotenv').config();
+
+
+console.log(process.env)
+
 const firebaseConfig = {
-    apiKey: "AIzaSyA49hVXYCBuSDfKqCoi94kQ1cKdnVXglsQ",
+    apiKey: process.env.API_KEY,
     authDomain: "kumon-check-in-app.firebaseapp.com",
     projectId: "kumon-check-in-app",
     storageBucket: "kumon-check-in-app.appspot.com",
