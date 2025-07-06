@@ -11,16 +11,17 @@
   },
   "dependencies": {
     "@expo/metro-runtime": "~5.0.4",
+    "dotenv": "^17.0.1",
     "expo": "~53.0.9",
+    "expo-file-system": "~18.1.10",
+    "expo-sharing": "~13.1.5",
     "expo-status-bar": "~2.2.3",
     "firebase": "^11.8.1",
     "papaparse": "^5.5.3",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.2",
-    "react-native-web": "^0.20.0",
-    "expo-sharing": "~13.1.5",
-    "expo-file-system": "~18.1.10"
+    "react-native-web": "^0.20.0"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0"
