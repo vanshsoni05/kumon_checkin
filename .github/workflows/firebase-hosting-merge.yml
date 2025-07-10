@@ -10,20 +10,25 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+     
       - name: Install Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 16
 
+     
       - name: Install dependencies
-        run: npm ci
+        run: npm install
 
+      
       - name: Install Expo CLI
         run: npm install -g expo-cli
 
+      
       - name: Export for Web
         run: expo export --platform web
 
+     
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
@@ -31,3 +36,4 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_KUMON_CHECK_IN_APP }}
           channelId: live
           projectId: kumon-check-in-app
+
