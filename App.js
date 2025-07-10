@@ -4,6 +4,8 @@ import { db } from './firebaseConfig';
 import { collection, getDocs, addDoc, onSnapshot, query, where, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { unparse } from 'papaparse';
 import { PW } from '@env';
+import { getAuth, signInAnonymously } from 'firebase/auth';
+
 
 
 let FileSystem, Sharing;
@@ -67,19 +69,28 @@ export default function App() {
   };
 
   const handleAddUser = async () => {
-    if(!addUsers.trim()){
+    if (!addUsers.trim()) {
       alert("Please enter a valid name");
       return;
     }
-
-    try{
-      await addDoc(collection(db, 'users'), { name: addUsers.trim() });
-      alert(`User '${addUsers.trim()}' added. `);
+  
+    try {
+      const newUser = await addDoc(collection(db, 'users'), { name: addUsers.trim() });
+      setUsers(prev => [...prev, { id: newUser.id, name: addUsers.trim() }]);
+      alert(`User '${addUsers.trim()}' added.`);
       setAddUsers('');
-    } catch(err){
+    } catch (err) {
       console.error("Failed to add user: ", err);
     }
   };
+
+  useEffect(() => {
+    const auth = getAuth();
+    signInAnonymously(auth)
+      .then(() => console.log('Signed in anonymously'))
+      .catch((error) => console.error('Anon sign-in error', error));
+  }, []);
+  
 
 
 
@@ -145,11 +156,22 @@ useEffect(() => {
         onPress = {() => {
           const adminPassword = PW;
           const input = prompt('Enter admin password: ');
+
           if(input == adminPassword){
-            setMode('admin');
+            const auth = getAuth();
+            const user = auth.currentUser;
+            
+            
+            if(!user){
+              alert('You need to be logged in');
+            }
+            else{
+              setMode('admin');
+              alert("Admin Mode Activated");
+            }
           }
           else{
-            alert('Incorrect Password!');
+            alert("Wrong password")
           }
         }}
       />
