@@ -1,8 +1,5 @@
 import env from "react-native-dotenv";
-require('dotenv').config();
-
-
-console.log(process.env)
+import { API_KEY } from '@env';
 
 
 
@@ -11,7 +8,7 @@ const { getFirestore, collection, getDocs, deleteDoc, doc } = require("firebase/
 
 
 const firebaseConfig = {
-    apiKey: pocess.env.API_KEY,
+    apiKey: API_KEY,
     authDomain: "kumon-check-in-app.firebaseapp.com",
     projectId: "kumon-check-in-app",
     storageBucket: "kumon-check-in-app.appspot.com",

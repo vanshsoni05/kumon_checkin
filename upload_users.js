@@ -5,16 +5,13 @@ import { API_KEY } from '@env';
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc } = require("firebase/firestore");
 const users = require("./users.json");
+import { API_KEY } from '@env';
 
 
-require('dotenv').config();
-
-
-console.log(process.env)
 
 
 const firebaseConfig = {
-  apiKey: process.env.API_KEY,
+  apiKey:API_KEY,
   authDomain: "kumon-check-in-app.firebaseapp.com",
   projectId: "kumon-check-in-app",
   storageBucket: "kumon-check-in-app.appspot.com",

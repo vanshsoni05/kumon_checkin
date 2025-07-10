@@ -3,10 +3,8 @@ import { Text, View, TextInput, FlatList, TouchableOpacity, StyleSheet, Platform
 import { db } from './firebaseConfig';
 import { collection, getDocs, addDoc, onSnapshot, query, where, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { unparse } from 'papaparse';
-require('dotenv').config();
+import { PW } from '@env';
 
-
-console.log(process.env)
 
 let FileSystem, Sharing;
 if (Platform.OS !== 'web') {
@@ -145,7 +143,7 @@ useEffect(() => {
         <Button title= "User Mode" onPress={() => setMode('user')} />
         <Button title="Admin Mode"
         onPress = {() => {
-          const adminPassword = process.env.PW;
+          const adminPassword = PW;
           const input = prompt('Enter admin password: ');
           if(input == adminPassword){
             setMode('admin');

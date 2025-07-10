@@ -2,9 +2,9 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore } from "firebase/firestore";
 
-require('dotenv').config();
+import { API_KEY } from '@env';
 
-console.log(process.env)
+
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -15,7 +15,7 @@ console.log(process.env)
 // Your web app's Firebase configuration
 // For Firebase JS SDK v7.20.0 and later, measurementId is optional
 const firebaseConfig = {
-  apiKey: process.env.API_KEY,
+  apiKey:API_KEY,
   authDomain: "kumon-check-in-app.firebaseapp.com",
   projectId: "kumon-check-in-app",
   storageBucket: "kumon-check-in-app.firebasestorage.app",
