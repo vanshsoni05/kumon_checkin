@@ -3,7 +3,6 @@ import { Text, View, TextInput, FlatList, TouchableOpacity, StyleSheet, Platform
 import { db } from './firebaseConfig';
 import { collection, getDocs, addDoc, onSnapshot, query, where, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { unparse } from 'papaparse';
-
 require('dotenv').config();
 
 
@@ -24,6 +23,8 @@ export default function App() {
   const [checkIns, setCheckIns] = useState([]);
   const [mode, setMode] = useState('user');
   const [selectedUser, setSelectedUser] = useState(null)
+  const [addUsers, setAddUsers] = useState('');
+
 
 
   const exportToCSV = async () => {
@@ -66,6 +67,24 @@ export default function App() {
     alert(`${user.name} checked in at ${new Date().toLocaleTimeString()}`);
     setSearchTerm('');
   };
+
+  const handleAddUser = async () => {
+    if(!addUsers.trim()){
+      alert("Please enter a valid name");
+      return;
+    }
+
+    try{
+      await addDoc(collection(db, 'users'), { name: addUsers.trim() });
+      alert(`User '${addUsers.trim()}' added. `);
+      setAddUsers('');
+    } catch(err){
+      console.error("Failed to add user: ", err);
+    }
+  };
+
+
+
 
   useEffect(() => {
     const fetchUsers = async () => {
@@ -183,6 +202,20 @@ useEffect(() => {
       )}
       {mode == 'admin' && (
         <>
+
+        <View style ={{marginTop: 20}}>
+          <Text style = {{fontWeight: 'bold'}}>  Add New User   </Text>
+
+          <TextInput placeholder='Enter Name' value={addUsers} onChangeText={setAddUsers} style = {styles.input} />
+          <Button title = "Add User" onPress = {handleAddUser} />
+
+        </View>
+
+
+
+
+
+
         <Text style={styles.subheader}> Checked In </Text>
         <FlatList 
           data = {checkIns}
@@ -196,6 +229,9 @@ useEffect(() => {
       )}
      
     </View>
+    
+
+
   );
 }
 

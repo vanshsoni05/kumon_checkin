@@ -1,11 +1,17 @@
+
+import { API_KEY } from '@env';
+
+
 const { initializeApp } = require("firebase/app");
 const { getFirestore, collection, addDoc } = require("firebase/firestore");
 const users = require("./users.json");
+
 
 require('dotenv').config();
 
 
 console.log(process.env)
+
 
 const firebaseConfig = {
   apiKey: process.env.API_KEY,
