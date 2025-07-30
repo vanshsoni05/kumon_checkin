@@ -27,29 +27,55 @@ export default function App() {
 
 
 
+
   const exportToCSV = async () => {
-    const csv = unparse(checkIns.map(({ name, timestamp }) => ({
-      name,
-      time: timestamp?.toDate?.().toLocaleString?.() ?? 'N/A'
-    })));
-    
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+  
+    const start = new Date(year, month, 1);
+    const end = new Date(year, month + 1, 0, 23, 59, 59);
+  
+    const q = query(
+      collection(db, 'check_ins'),
+      where('timestamp', '>=', Timestamp.fromDate(start)),
+      where('timestamp', '<=', Timestamp.fromDate(end))
+    );
+  
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map(doc => doc.data());
+  
+    if (data.length === 0) {
+      alert(`No check-ins found for ${month + 1}/${year}`);
+      return;
+    }
+  
+    const csv = unparse(
+      data.map(({ name, timestamp }) => ({
+        name,
+        time: timestamp?.toDate?.().toLocaleString?.() ?? 'N/A'
+      }))
+    );
+  
+    const filename = `checkins_${year}_${month + 1}.csv`;
   
     if (Platform.OS === 'web') {
       const blob = new Blob([csv], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.setAttribute('download', 'checkins.csv');
+      link.setAttribute('download', filename);
       document.body.appendChild(link);
       link.click();
     } else {
-      const fileUri = FileSystem.documentDirectory + 'checkins.csv';
+      const fileUri = FileSystem.documentDirectory + filename;
       await FileSystem.writeAsStringAsync(fileUri, csv, {
-        encoding: FileSystem.EncodingType.UTF8
+        encoding: FileSystem.EncodingType.UTF8,
       });
       await Sharing.shareAsync(fileUri);
     }
   };
+  
 
   const handleCheckIn = async (user) => {
     console.log('Tapped User:', user.name);
@@ -262,5 +288,7 @@ const styles = StyleSheet.create({
   input: { borderWidth: 1, padding: 10, marginBottom: 10 },
   item: { padding: 10, borderBottomWidth: 1 }
 });
+
+
 
 
