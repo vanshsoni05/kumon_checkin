@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, TextInput, FlatList, TouchableOpacity, StyleSheet, Platform, Button, ScrollView } from 'react-native';
+import { Text, View, TextInput, FlatList, TouchableOpacity, StyleSheet, Platform, Button, ScrollView, Touchable } from 'react-native';
 import { db } from './firebaseConfig';
 import { collection, getDocs, addDoc, onSnapshot, query, where, Timestamp, deleteDoc, doc } from 'firebase/firestore';
 import { unparse } from 'papaparse';
@@ -20,6 +20,8 @@ export default function App() {
   const [mode, setMode] = useState('user');
   const [selectedUser, setSelectedUser] = useState(null);
   const [addUsers, setAddUsers] = useState('');
+  const [monthlyCheckIns, setMonthlyCheckIns] = useState([]);
+  const [adminTab, setAdminTab] = useState('today');  
 
   const exportToCSV = async () => {
     const now = new Date();
@@ -155,6 +157,25 @@ export default function App() {
     clearOldCheckIns();
   }, []);
 
+
+  useEffect(() => {
+    if (mode !== 'admin') return;
+    const fetchMonthlyCheckIns = async () => {
+      const now = new Date();
+      const start = new Date(now.getFullYear(), now.getMonth(), 1);
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      const q = query(
+        collection(db, 'check_ins'),
+        where('timestamp', '>=', Timestamp.fromDate(start)),
+        where('timestamp', '<=', Timestamp.fromDate(end))
+      );
+      const snapshot = await getDocs(q);
+      const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })).sort((a, b) => b.timestamp?.toDate?.() - a.timestamp?.toDate?.());
+      setMonthlyCheckIns(data);
+    };
+    fetchMonthlyCheckIns();
+  }, [mode]);
+
   return (
     <ScrollView style={styles.container}>
       {/* Header with Mode Toggle */}
@@ -281,6 +302,12 @@ export default function App() {
               <Text style={styles.statNumber}>{checkIns.length}</Text>
               <Text style={styles.statLabel}>Check-Ins Today</Text>
             </View>
+
+            <View style = {styles.statCard}>
+              <Text style={styles.statNumber}>{monthlyCheckIns.length}</Text>
+              <Text style={styles.statLabel}>Check-Ins This Month</Text>
+            </View>
+            
             <View style={styles.statCard}>
               <Text style={styles.statNumber}>{users.length}</Text>
               <Text style={styles.statLabel}>Total Users</Text>
@@ -325,23 +352,69 @@ export default function App() {
 
           {/* Check-ins List */}
           <View style={styles.adminCard}>
-            <Text style={styles.adminCardTitle}>Today's Check-Ins</Text>
-            {checkIns.length === 0 ? (
-              <Text style={styles.emptyText}>No check-ins yet today</Text>
-            ) : (
-              <FlatList
-                data={checkIns}
-                keyExtractor={(item) => item.id}
-                renderItem={({ item, index }) => (
-                  <View style={[styles.checkInItem, index % 2 === 0 && styles.checkInItemAlt]}>
-                    <Text style={styles.checkInName}>{item.name}</Text>
-                    <Text style={styles.checkInTime}>
-                      {item.timestamp?.toDate?.().toLocaleTimeString?.() ?? 'No time'}
-                    </Text>
-                  </View>
+            <View style = {styles.tabToggle}>
+              <TouchableOpacity
+                style={[styles.tabButton, adminTab === 'today' && styles.tabButtonActive]}
+                onPress={() => setAdminTab('today')}
+              >
+              <Text style={[styles.tabButtonText, adminTab === 'today' && styles.tabButtonTextActive]}>
+                Today's ({checkIns.length})
+              </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tabButton, adminTab === 'monthly' && styles.tabButtonActive]}
+                onPress={() => setAdminTab('monthly')}
+              >
+                <Text style={[styles.tabButtonText, adminTab === 'monthly' && styles.tabButtonTextActive]}>
+                  This Month ({monthlyCheckIns.length})
+                </Text>
+              </TouchableOpacity>
+            </View>
+            {adminTab === 'today' && (
+              <>
+                <Text style = {styles.adminCardTitle}>Today's Check-Ins</Text>
+                {checkIns.length === 0 ? (
+                  <Text style={styles.emptyText}>No check-ins yet today</Text>
+                ) : (
+                  <FlatList
+                    data={checkIns}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item, index }) => (
+                      <View style={[styles.checkInItem, index % 2 === 0 && styles.checkInItemAlt]}>
+                        <Text style={styles.checkInName}>{item.name}</Text>
+                        <Text style={styles.checkInTime}>
+                          {item.timestamp?.toDate?.().toLocaleTimeString?.() ?? 'No time'}
+                        </Text>
+                      </View>
+                    )}
+                    scrollEnabled={false}
+                  />
                 )}
-                scrollEnabled={false}
-              />
+              </>
+            )}
+            {adminTab === 'monthly' && (
+              <>
+                <Text style = {styles.adminCardTitle}> 
+                  {new Date().toLocaleString('default', { month: 'long' })} Check-Ins
+                </Text>
+                {monthlyCheckIns.length === 0 ? (
+                  <Text style={styles.emptyText}>No check-ins this month</Text>
+                ) : (
+                  <FlatList
+                    data={monthlyCheckIns}
+                    keyExtractor={(item) => item.id}
+                    renderItem={({ item, index }) => (
+                      <View style={[styles.checkInItem, index % 2 === 0 && styles.checkInItemAlt]}>
+                        <Text style={styles.checkInName}>{item.name}</Text>
+                        <Text style={styles.checkInTime}>
+                          {item.timestamp?.toDate?.().toLocaleString?.() ?? 'No time'}
+                        </Text>
+                      </View>
+                    )}
+                    scrollEnabled={false}
+                  />
+                )}
+              </>
             )}
           </View>
         </View>
@@ -349,6 +422,7 @@ export default function App() {
     </ScrollView>
   );
 }
+            
 
 const styles = StyleSheet.create({
   container: {
@@ -590,6 +664,30 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: '#6b7280',
     marginTop: 8,
+  },
+  tabToggle: {
+    flexDirection: 'row',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 10,
+    padding: 4,
+    marginBottom: 20,
+  },
+  tabButton: {
+    flex: 1,
+    paddingVertical: 10,
+    alignItems: 'center',
+    borderRadius: 8,
+  },
+  tabButtonActive: {
+    backgroundColor: '#2563eb',
+  },
+  tabButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#6b7280',
+  },
+  tabButtonTextActive: {
+    color: '#ffffff',
   },
 });
 
